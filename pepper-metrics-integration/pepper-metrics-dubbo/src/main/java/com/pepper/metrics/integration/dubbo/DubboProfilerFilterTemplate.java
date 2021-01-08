@@ -30,16 +30,21 @@ public abstract class DubboProfilerFilterTemplate implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        final String category = invoker.getInterface().getSimpleName(); // 接口名
+        // 接口名
+        final String category = invoker.getInterface().getSimpleName();
+        // 调用方ip
+        String clientIp = RpcContext.getContext().getRemoteHost();
+
         StringBuilder params = new StringBuilder();
         Class[] clazzs = invocation.getParameterTypes();
         for (int index = 0; index < clazzs.length; index++) {
             params.append(index == clazzs.length - 1 ? clazzs[index].getSimpleName() : clazzs[index].getSimpleName() + ", ");
         }
 
-        final String metrics = invocation.getMethodName() + "(" + params.toString() + ")"; // method(参数类型...)
+        // method(参数类型...)
+        final String metrics = invocation.getMethodName() + "(" + params.toString() + ")";
 
-        String[] tags = new String[]{"method", metrics, "service", category};
+        String[] tags = new String[]{"clientIp", clientIp, "method", metrics, "service", category};
 
         if (StringUtils.isEmpty(category) || StringUtils.isEmpty(metrics)) {
             return invoker.invoke(invocation);
